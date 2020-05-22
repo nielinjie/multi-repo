@@ -116,8 +116,8 @@ export class ProjectCheckTask {
         .flat(),
     ];
   }
-  all() {
-    return Promise.all(this.tasks.map(async (task) => [task, await task.task]));
+  all() :Promise<[Task<unknown>,unknown][]>{
+    return Promise.all(this.tasks.map(async (task:Task<unknown>) => [task, await task.task] as [Task<unknown>,unknown]));
   }
 }
 
@@ -125,7 +125,7 @@ class Task<T> {
   constructor(public name: string, public task: Promise<T>) {}
 }
 export class CheckTask<T> extends Task<T> {
-  check: boolean = false;
+  check: boolean | undefined= undefined;
   constructor(public name: string, public task: Promise<T>, public wanted: T) {
     super(name, task);
     this.task.then((re) => {
