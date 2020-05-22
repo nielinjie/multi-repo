@@ -1,5 +1,5 @@
 {
-  "name": "multi-repo",
+  "name": "@nielinjie/multi-repo",
   "version": "0.2.0",
   "description": "方便操作有依赖关系的多仓库。",
   "bin": "dist/index.js",
