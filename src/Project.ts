@@ -1,6 +1,135 @@
-export interface Project {
-    name: string;
-    dependencies: string[];
-    packageJson: any;
-    path:string;
+import { Dependency } from "./Dep";
+import _ from "lodash";
+import { sortByDepends } from "./DepTree";
+import * as fs from "fs-extra";
+import path from "path";
+import minimatch from "minimatch";
+import { notNil } from "./Util";
+import { config } from "./Config";
+import { fail } from "assert";
+import gitP, { SimpleGit, StatusResult } from "simple-git/promise";
+export class Project {
+  public name: string;
+  public dependencies: Dependency[];
+  public version: string;
+  constructor(public packageJson: any, public path: string) {
+    this.name = packageJson.name;
+    this.dependencies = dependencies(this.packageJson);
+    this.version = packageJson.version;
+  }
+  async isWorkTreeClean(): Promise<boolean> {
+    const git: SimpleGit = gitP(this.path);
+    const status: StatusResult = await git.status();
+    return status.files.length === 0;
+  }
+  async isHeadTagged(): Promise<boolean> {
+    const git: SimpleGit = gitP(this.path);
+    const latest = (await git.log()).latest;
+    const vReg = /tag\s*:\s*v([\d\.]+)\s*/;
+    // console.log(latest);
+    const refVersion = vReg.exec(latest.refs);
+    if (refVersion) {
+      //   console.log(refVersion);
+
+      const re = refVersion[1];
+      //   console.log(re);
+      return re === this.version;
+    }
+
+    return false;
+  }
+}
+
+export function dependencies(packageJson: any): Dependency[] {
+  return _(packageJson.dependencies as object)
+    .map((value, key) => {
+      return new Dependency(key, value);
+    })
+    .value();
+}
+
+let _projects: Project[] | undefined;
+
+export function projects(basePath?: string): Project[] {
+  if (!_projects) _projects = sortByDepends(listProject(basePath!)).reverse();
+  return _projects;
+}
+
+function listProject(basePath: string): Project[] {
+  const projects = fs
+    .readdirSync(basePath)
+    .map((fileR) => {
+      const file = path.resolve(basePath, fileR);
+      if (fs.existsSync(file) && fs.lstatSync(file).isDirectory()) {
+        const packagePath = path.resolve(file, "package.json");
+        if (fs.existsSync(packagePath)) {
+          const packageJson = fs.readJSONSync(packagePath);
+          return new Project(packageJson, file);
+        } else return undefined;
+      } else return undefined;
+    })
+    .filter(notNil);
+
+  const includedProjects = projects.filter((project) =>
+    config().includes.some((include) => minimatch(project.name, include))
+  );
+  const names = includedProjects.map((project) => project.name);
+
+  includedProjects.forEach((project) => {
+    project.dependencies = project.dependencies.filter((dep) =>
+      names.includes(dep.name)
+    );
+  });
+  return includedProjects;
+}
+
+export class ProjectCheckTask {
+  public tasks: Task<unknown>[];
+  constructor(public project: Project) {
+    this.tasks = [
+      new CheckTask<boolean>(
+        "isWorkTreeClean",
+        project.isWorkTreeClean(),
+        true
+      ),
+      new CheckTask<boolean>("isHeadTagged", project.isHeadTagged(), true),
+      ...project.dependencies
+        .map((dependency) => {
+          return [
+            new CheckTask<boolean>(
+              `${dependency.name} - isLink`,
+              dependency.isLink(project),
+              false
+            ),
+            new CheckTask<boolean>(
+              `${dependency.name} - isVersionSatisfied`,
+              dependency.isVersionSatisfied(),
+              true
+            ),
+            new CheckTask<boolean>(
+              `${dependency.name} - isVersionNew`,
+              dependency.isVersionNew(),
+              true
+            ),
+          ];
+        })
+        .flat(),
+    ];
+  }
+  all() {
+    return Promise.all(this.tasks.map(async (task) => [task, await task.task]));
+  }
+}
+
+class Task<T> {
+  constructor(public name: string, public task: Promise<T>) {}
+}
+export class CheckTask<T> extends Task<T> {
+  check: boolean = false;
+  constructor(public name: string, public task: Promise<T>, public wanted: T) {
+    super(name, task);
+    this.task.then((re) => {
+      this.check = re === wanted;
+    });
+  }
 }

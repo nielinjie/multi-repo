@@ -1,13 +1,16 @@
 {
   "compilerOptions": {
-    "target":"es5",
+    "target": "es5",
     "sourceMap": true,
-    "outDir": "dist",
+    "outDir": "./dist",
     "strict": true,
     "lib": ["esnext", "dom"],
-    "noImplicitAny":false,
+    "noImplicitAny": false,
+    "declaration": true,
     "moduleResolution": "node",
-    "allowSyntheticDefaultImports":true
+    "module": "CommonJS",
+    "resolveJsonModule": true,
+    "esModuleInterop": true
   },
-  "exclude": ["templates","dist"]
+  "exclude": ["./templates","./dist"]
 }
