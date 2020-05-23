@@ -173,4 +173,7 @@ export class CheckTask<T> extends Task<T> {
       this.check = re === wanted;
     });
   }
+  then<R>(fun: (task: Task<T>) => R): Promise<R> {
+    return this.task.then((_) => fun(this));
+  }
 }
