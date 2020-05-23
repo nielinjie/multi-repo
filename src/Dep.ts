@@ -37,5 +37,6 @@ export class Dependency {
 
 function getRangeVersion(range: string): string {
   if (range.startsWith("^") || range.startsWith("~")) return range.substring(1);
+  //TODO 处理比较全面的 range。
   else fail("only support range started with ~/^");
 }

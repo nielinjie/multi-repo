@@ -41,6 +41,8 @@ export class Project {
       const data = await axios
         .get(`http://registry.npmjs.org/${this.name}`)
         .then((re) => re.data);
+      //TODO 处理 prerelease 的情况。
+
       const latest = await data?.["dist-tags"]?.["latest"];
       if (latest) {
         return semver.gte(latest, this.version);
@@ -50,6 +52,16 @@ export class Project {
     } catch (err) {
       return false;
     }
+  }
+
+  async isGitRemoteUpdated(): Promise<boolean> {
+    const git: SimpleGit = gitP(this.path);
+    const latest = (await git.log()).latest;
+    // const vReg = /tag\s*:\s*v([\d\.]+)\s*/;
+    // console.log(latest.refs);
+    // console.log(latest.refs.indexOf("origin"));
+    //TODO 写死了remote名字
+    return latest.refs.indexOf("origin") !== -1;
   }
 }
 
@@ -109,6 +121,12 @@ export class ProjectCheckTask {
       new CheckTask<boolean>(
         "isNpmRepositoryUpdated",
         this.project.isNpmRepositoryUpdated(),
+        true
+      ),
+
+      new CheckTask<boolean>(
+        "isGitRemoteUpdated",
+        this.project.isGitRemoteUpdated(),
         true
       ),
       ...project.dependencies
