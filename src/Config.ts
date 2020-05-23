@@ -16,13 +16,9 @@ export function config(basePath?: string): Config {
   return _config;
 }
 function loadConfig(basePath: string): Partial<Config> {
-  assert(basePath !== undefined);
-  const configJSONPath = path.resolve(
-    process.cwd(),
-    basePath,
-    "multi-repo.json"
-  );
+  assert(basePath);
+  const configJSONPath = path.resolve(basePath, "multi-repo.json");
   if (fs.existsSync(configJSONPath)) {
     return { basePath, includes: [], ...fs.readJSONSync(configJSONPath) };
-  } else return { basePath, includes: ['**'] };
+  } else return { basePath, includes: ["**"] };
 }
