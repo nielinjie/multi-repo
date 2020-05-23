@@ -1,7 +1,7 @@
 {
   "name": "@nielinjie/multi-repo",
   "repository": "https://github.com/nielinjie/multi-repo",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "方便操作有依赖关系的多仓库。",
   "bin": "dist/index.js",
   "main": "dist/index.js",
