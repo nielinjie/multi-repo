@@ -7,7 +7,9 @@ import minimatch from "minimatch";
 import { notNil } from "./Util";
 import { config } from "./Config";
 import { fail } from "assert";
+import axios from "axios";
 import gitP, { SimpleGit, StatusResult } from "simple-git/promise";
+import * as semver from "semver";
 export class Project {
   public name: string;
   public dependencies: Dependency[];
@@ -17,7 +19,7 @@ export class Project {
     this.dependencies = dependencies(this.packageJson);
     this.version = packageJson.version;
   }
-  async isWorkTreeClean(): Promise<boolean> {
+  async isWorkingDirClean(): Promise<boolean> {
     const git: SimpleGit = gitP(this.path);
     const status: StatusResult = await git.status();
     return status.files.length === 0;
@@ -29,14 +31,25 @@ export class Project {
     // console.log(latest);
     const refVersion = vReg.exec(latest.refs);
     if (refVersion) {
-      //   console.log(refVersion);
-
       const re = refVersion[1];
-      //   console.log(re);
       return re === this.version;
     }
-
     return false;
+  }
+  async isNpmRepositoryUpdated(): Promise<boolean> {
+    try {
+      const data = await axios
+        .get(`http://registry.npmjs.org/${this.name}`)
+        .then((re) => re.data);
+      const latest = await data?.["dist-tags"]?.["latest"];
+      if (latest) {
+        return semver.gte(latest, this.version);
+      } else {
+        return false;
+      }
+    } catch (err) {
+      return false;
+    }
   }
 }
 
@@ -88,11 +101,16 @@ export class ProjectCheckTask {
   constructor(public project: Project) {
     this.tasks = [
       new CheckTask<boolean>(
-        "isWorkTreeClean",
-        project.isWorkTreeClean(),
+        "isWorkingDirClean",
+        project.isWorkingDirClean(),
         true
       ),
       new CheckTask<boolean>("isHeadTagged", project.isHeadTagged(), true),
+      new CheckTask<boolean>(
+        "isNpmRepositoryUpdated",
+        this.project.isNpmRepositoryUpdated(),
+        true
+      ),
       ...project.dependencies
         .map((dependency) => {
           return [
@@ -116,8 +134,13 @@ export class ProjectCheckTask {
         .flat(),
     ];
   }
-  all() :Promise<[Task<unknown>,unknown][]>{
-    return Promise.all(this.tasks.map(async (task:Task<unknown>) => [task, await task.task] as [Task<unknown>,unknown]));
+  all(): Promise<[Task<unknown>, unknown][]> {
+    return Promise.all(
+      this.tasks.map(
+        async (task: Task<unknown>) =>
+          [task, await task.task] as [Task<unknown>, unknown]
+      )
+    );
   }
 }
 
@@ -125,7 +148,7 @@ class Task<T> {
   constructor(public name: string, public task: Promise<T>) {}
 }
 export class CheckTask<T> extends Task<T> {
-  check: boolean | undefined= undefined;
+  check: boolean | undefined = undefined;
   constructor(public name: string, public task: Promise<T>, public wanted: T) {
     super(name, task);
     this.task.then((re) => {

@@ -24,5 +24,5 @@ function loadConfig(basePath: string): Partial<Config> {
   );
   if (fs.existsSync(configJSONPath)) {
     return { basePath, includes: [], ...fs.readJSONSync(configJSONPath) };
-  } else return { basePath };
+  } else return { basePath, includes: ['**'] };
 }
