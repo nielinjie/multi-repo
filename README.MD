@@ -34,10 +34,10 @@ multi-repo跟mono-repo相对，也就是一个package一个项目子目录，一
 2. 检查本项目working directory是否干净。
 3. 检查git历史，最新提交上面是否有vx.x.x的tag。也即是否有npm version过。
 4. 检查npm repository上的版本是否跟本地package 版本一致。
-5. 检查每个依赖，看其中是否有link。
-6. 检查每个依赖，看是否有新的版本，新版本是否满足依赖版本范围。
-7. （WIP🏃）docker相关检查。
-8. （WIP🏃）Github相关检查。
+5. 检查Github（或者其他remote）是否更新。
+6. 检查每个依赖，看其中是否有link。
+7. 检查每个依赖，看是否有新的版本，新版本是否满足依赖版本范围。
+8. （WIP🏃）docker相关检查。
 
 
 
