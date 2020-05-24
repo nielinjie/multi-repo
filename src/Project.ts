@@ -10,6 +10,7 @@ import { fail } from "assert";
 import axios from "axios";
 import gitP, { SimpleGit, StatusResult } from "simple-git/promise";
 import * as semver from "semver";
+import { CheckTask, Task } from "./CheckTask";
 export class Project {
   public name: string;
   public dependencies: Dependency[];
@@ -152,28 +153,7 @@ export class ProjectCheckTask {
         .flat(),
     ];
   }
-  all(): Promise<[Task<unknown>, unknown][]> {
-    return Promise.all(
-      this.tasks.map(
-        async (task: Task<unknown>) =>
-          [task, await task.task] as [Task<unknown>, unknown]
-      )
-    );
-  }
 }
 
-class Task<T> {
-  constructor(public name: string, public task: Promise<T>) {}
-}
-export class CheckTask<T> extends Task<T> {
-  check: boolean | undefined = undefined;
-  constructor(public name: string, public task: Promise<T>, public wanted: T) {
-    super(name, task);
-    this.task.then((re) => {
-      this.check = re === wanted;
-    });
-  }
-  then<R>(fun: (task: Task<T>) => R): Promise<R> {
-    return this.task.then((_) => fun(this));
-  }
-}
+
+

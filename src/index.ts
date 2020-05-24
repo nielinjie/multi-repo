@@ -13,7 +13,7 @@ export {
   Project,
   dependencies,
   ProjectCheckTask,
-  CheckTask,
+  
 } from "./Project";
 
 
