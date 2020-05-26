@@ -121,7 +121,7 @@ export class ProjectCheckTask {
         "isWorkingDirClean",
         project.isWorkingDirClean(),
         true,
-        [new Action("gitCommit", "git add -A & git commit -m xxx")]
+        [new Action("gitCommit", "git add -A && git commit -m xxx")]
       ),
       new CheckTask<boolean>("isHeadTagged", project.isHeadTagged(), true, [
         new Action("npmVersion", "npm version major/minor/patch"),
