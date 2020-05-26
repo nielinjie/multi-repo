@@ -6,7 +6,7 @@ multi-repo跟mono-repo相对，也就是一个package一个项目子目录，一
 
 （本工具暂时只针对单人，还没有考虑多人协同开发的较复杂情况。）
 
-![Screen Shot 2020-05-26 at 10.45.45 PM](images/Screen Shot 2020-05-26 at 10.45.45 PM.png)
+![ScreenShot2020-05-26](images/ScreenShot2020-05-26.png)
 
 ## 如何运行
 
