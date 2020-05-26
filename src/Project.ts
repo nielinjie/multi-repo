@@ -11,6 +11,7 @@ import axios from "axios";
 import gitP, { SimpleGit, StatusResult } from "simple-git/promise";
 import * as semver from "semver";
 import { CheckTask, Task } from "./CheckTask";
+import { Action } from "./Action";
 export class Project {
   public name: string;
   public dependencies: Dependency[];
@@ -113,47 +114,55 @@ export class ProjectCheckTask {
   public tasks: Task<unknown>[];
   constructor(public project: Project) {
     this.tasks = [
+      ...this.dependencyTasks(project),
       new CheckTask<boolean>(
         "isWorkingDirClean",
         project.isWorkingDirClean(),
-        true
+        true,
+        [new Action("gitCommit", "git add -A -m xxx")]
       ),
-      new CheckTask<boolean>("isHeadTagged", project.isHeadTagged(), true),
+      new CheckTask<boolean>("isHeadTagged", project.isHeadTagged(), true, [
+        new Action("npmVersion", "npm version major/minor/patch"),
+      ]),
       new CheckTask<boolean>(
         "isNpmRepositoryUpdated",
         this.project.isNpmRepositoryUpdated(),
-        true
+        true,
+        [new Action("npmPublish", "npm publish")]
       ),
 
       new CheckTask<boolean>(
         "isGitRemoteUpdated",
         this.project.isGitRemoteUpdated(),
-        true
+        true,
+        [new Action("gitPush", "git push")]
       ),
-      ...project.dependencies
-        .map((dependency) => {
-          return [
-            new CheckTask<boolean>(
-              `${dependency.name} - isLink`,
-              dependency.isLink(project),
-              false
-            ),
-            new CheckTask<boolean>(
-              `${dependency.name} - isVersionSatisfied`,
-              dependency.isVersionSatisfied(),
-              true
-            ),
-            new CheckTask<boolean>(
-              `${dependency.name} - isVersionNew`,
-              dependency.isVersionNew(),
-              true
-            ),
-          ];
-        })
-        .flat(),
     ];
   }
+
+  private dependencyTasks(project: Project) {
+    return project.dependencies
+      .map((dependency) => {
+        return [
+          new CheckTask<boolean>(
+            `${dependency.name} - isLink`,
+            dependency.isLink(project),
+            false,
+            [new Action("npmUpdate", "npm update")]
+          ),
+          new CheckTask<boolean>(
+            `${dependency.name} - isVersionSatisfied`,
+            dependency.isVersionSatisfied(),
+            true
+          ),
+          new CheckTask<boolean>(
+            `${dependency.name} - isVersionNew`,
+            dependency.isVersionNew(),
+            true,
+            [new Action("npmUpdate", "npm update")]
+          ),
+        ];
+      })
+      .flat();
+  }
 }
-
-
-

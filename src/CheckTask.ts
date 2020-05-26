@@ -1,3 +1,5 @@
+import { Action } from "./Action";
+
 export class Task<T> {
   public state: string = "pending";
   public err = undefined;
@@ -12,7 +14,8 @@ export class Task<T> {
 }
 export class CheckTask<T> extends Task<T> {
   check: boolean | undefined = undefined;
-  constructor(public name: string, public task: Promise<T>, public wanted: T) {
+
+  constructor(public name: string, public task: Promise<T>, public wanted: T,public actions:Action[]=[]) {
     super(name, task);
     this.task.then((re) => {
       this.check = re === wanted;
