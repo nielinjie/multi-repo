@@ -7,6 +7,8 @@ import minimatch from "minimatch";
 import { notNil } from "./Util";
 import { config } from "./Config";
 import { fail } from "assert";
+import { timeout, TimeoutError } from "promise-timeout";
+
 import axios from "axios";
 import gitP, { SimpleGit, StatusResult } from "simple-git/promise";
 import * as semver from "semver";
@@ -52,7 +54,7 @@ export class Project {
         return false;
       }
     } catch (err) {
-      return false;
+      throw `when got npm  - a err`;
     }
   }
 
@@ -119,14 +121,14 @@ export class ProjectCheckTask {
         "isWorkingDirClean",
         project.isWorkingDirClean(),
         true,
-        [new Action("gitCommit", "git add -A -m xxx")]
+        [new Action("gitCommit", "git add -A & git commit -m xxx")]
       ),
       new CheckTask<boolean>("isHeadTagged", project.isHeadTagged(), true, [
         new Action("npmVersion", "npm version major/minor/patch"),
       ]),
       new CheckTask<boolean>(
         "isNpmRepositoryUpdated",
-        this.project.isNpmRepositoryUpdated(),
+        timeout(this.project.isNpmRepositoryUpdated(), 5 * 1000),
         true,
         [new Action("npmPublish", "npm publish")]
       ),
