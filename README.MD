@@ -4,13 +4,17 @@
 
 multi-repo跟mono-repo相对，也就是一个package一个项目子目录，一个package一个git repository。
 
-（本工具暂时只针对单人，没有考虑多人协同开发的较复杂情况。）
+（本工具暂时只针对单人，还没有考虑多人协同开发的较复杂情况。）
 
-![ScreenShot2020-05-23](images/ScreenShot2020-05-23.png)
+![Screen Shot 2020-05-26 at 10.45.45 PM](images/Screen Shot 2020-05-26 at 10.45.45 PM.png)
 
 ## 如何运行
 
 `npx @nielinjie/mutli-repo-cli`
+
+或者先安装 - 
+
+`npm install -g @nielinjie/mutli-repo-cli`
 
 （参见本工具的UI——[mutli-repo-cli](https://github.com/nielinjie/multi-repo-cli)）
 
