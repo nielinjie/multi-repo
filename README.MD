@@ -10,13 +10,13 @@ multi-repo跟mono-repo相对，也就是一个package一个项目子目录，一
 
 ## 如何运行
 
-`npx @nielinjie/mutli-repo-cli`
+`npx @nielinjie/multi-repo-cli`
 
 或者先安装 - 
 
-`npm install -g @nielinjie/mutli-repo-cli`
+`npm install -g @nielinjie/multi-repo-cli`
 
-（参见本工具的UI——[mutli-repo-cli](https://github.com/nielinjie/multi-repo-cli)）
+（参见本工具的UI——[multi-repo-cli](https://github.com/nielinjie/multi-repo-cli)）
 
 
 
