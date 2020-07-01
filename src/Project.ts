@@ -98,7 +98,6 @@ function listProject(basePath: string): Project[] {
       } else return undefined;
     })
     .filter(notNil);
-
   const includedProjects = projects.filter((project) =>
     config().includes.some((include) => minimatch(project.name, include))
   );
